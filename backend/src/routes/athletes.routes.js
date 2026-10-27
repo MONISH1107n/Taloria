@@ -405,8 +405,8 @@ router.post(
   '/:id/videos',
   authenticate,
   requireOwnerOrAdmin(async (req) => ownerOfAthleteId(req.params.id)),
-  validateBody(videoSchema),
   upload.single('file'),
+  validateBody(videoSchema),
   asyncHandler(async (req, res) => {
     if (!req.file) throw badRequest('VALIDATION_ERROR', 'No file uploaded (field "file").');
 

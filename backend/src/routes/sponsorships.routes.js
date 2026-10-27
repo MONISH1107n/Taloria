@@ -178,7 +178,7 @@ router.get(
               spk.name AS package_name, spk.price, spk.currency, sr.status, sr.requested_at, sr.decided_at,
               spn.company_name
        ${base}${whereSql}
-       ORDER BY ${orderSql} NULLS LAST, sr.id
+       ORDER BY sr.${sort} ${order} NULLS LAST, sr.id
        LIMIT $${i} OFFSET $${i + 1}`,
       [...values, pageSize, offset],
     );

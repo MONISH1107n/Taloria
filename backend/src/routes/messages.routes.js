@@ -169,10 +169,10 @@ router.get(
     const whereSql = conditions.length ? ` WHERE ${conditions.join(' AND ')}` : '';
     const { rows } = await pool.query(
       `SELECT mt.id, mt.blocked_at, mt.created_at AS thread_created_at,
-              (SELECT body FROM messages m WHERE m.thread_id = mt.id ORDER BY created_at DESC LIMIT 1) AS last_message,
-              (SELECT created_at FROM messages m WHERE m.thread_id = mt.id ORDER BY created_at DESC LIMIT 1) AS last_message_at,
+              (SELECT m.body FROM messages m WHERE m.thread_id = mt.id ORDER BY m.created_at DESC LIMIT 1) AS last_message,
+              (SELECT m.created_at FROM messages m WHERE m.thread_id = mt.id ORDER BY m.created_at DESC LIMIT 1) AS last_message_at,
               (SELECT count(*)::int FROM messages m WHERE m.thread_id = mt.id AND m.read_at IS NULL AND m.sender_user_id <> $1) AS unread_count,
-              spn.user_id AS scout_user_id, CONCAT(sp.first_name, ' ', sp.last_name) AS scout_name,
+              sp.user_id AS scout_user_id, CONCAT(sp.first_name, ' ', sp.last_name) AS scout_name,
               ap.user_id AS athlete_user_id, CONCAT(ap.first_name, ' ', ap.last_name) AS athlete_name
          FROM message_threads mt
          JOIN scout_profiles sp ON sp.id = mt.scout_id

@@ -42,6 +42,9 @@ router.get(
   requireRole('athlete', 'organizer', 'admin'),
   asyncHandler(async (req, res) => {
     const { page, pageSize, sort, order, offset } = parsePagination(req, SORTABLE);
+    const allowedSort = new Set(SORTABLE);
+    const sortCol = allowedSort.has(sort) ? sort : 'applied_at';
+    const orderDir = order === 'asc' ? 'ASC' : 'DESC';
     const q = req.query;
 
     const values = [];
@@ -70,11 +73,10 @@ router.get(
     }
 
     const whereSql = conditions.length ? ` WHERE ${conditions.join(' AND ')}` : '';
-    const orderSql = `${sort} ${order}`;
 
     const { rows: countRows } = await pool.query(`SELECT count(*)::int AS total ${APPLICATION_FROM}${whereSql}`, values);
     const { rows } = await pool.query(
-      `${APPLICATION_SELECT}${whereSql} ORDER BY ${orderSql} NULLS LAST, ta.id LIMIT $${i} OFFSET $${i + 1}`,
+      `${APPLICATION_SELECT}${whereSql} ORDER BY ta.${sortCol} ${orderDir} NULLS LAST, ta.id LIMIT $${i} OFFSET $${i + 1}`,
       [...values, pageSize, offset],
     );
 

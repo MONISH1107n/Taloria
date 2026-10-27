@@ -234,7 +234,9 @@ router.get(
 
     const fromClause = `FROM tournaments t LEFT JOIN tournament_categories c ON c.id = t.category_id`;
     const whereSql = conditions.length ? ` WHERE ${conditions.join(' AND ')}` : '';
-    const orderSql = `${sort} ${order}`;
+    const allowedSort = new Set(SORTABLE);
+    const sortCol = allowedSort.has(sort) ? sort : 'created_at';
+    const orderDir = order === 'asc' ? 'ASC' : 'DESC';
 
     const { rows: countRows } = await pool.query(`SELECT count(*)::int AS total ${fromClause}${whereSql}`, values);
     const { rows } = await pool.query(
@@ -244,7 +246,7 @@ router.get(
               (SELECT count(*)::int FROM tournament_participants tp WHERE tp.tournament_id = t.id) AS participant_count,
               (SELECT count(*)::int FROM sponsorship_requests sr WHERE sr.tournament_id = t.id AND sr.status = 'active') AS sponsor_count
        ${fromClause}${whereSql}
-       ORDER BY ${orderSql} NULLS LAST, t.id
+       ORDER BY t.${sortCol} ${orderDir} NULLS LAST, t.id
        LIMIT $${i} OFFSET $${i + 1}`,
       [...values, pageSize, offset],
     );
